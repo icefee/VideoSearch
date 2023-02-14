@@ -51,7 +51,7 @@ namespace VideoSearch
             if (response.IsSuccessStatusCode)
             {
                 String textContent = await response.Content.ReadAsStringAsync();
-                string pattern = @"[a-zA-Z\d\/\+\=]{100,}";
+                String pattern = @"[a-zA-Z\d\/\+\=]{100,}";
                 Match match = Regex.Match(textContent, pattern);
                 String json = DecodeBase64("utf-8", match.Value);
                 searchResult = JsonSerializer.Deserialize<SearchResult[]>(json);
@@ -59,10 +59,10 @@ namespace VideoSearch
             return searchResult;
         }
 
-        public static string DecodeBase64(string input, string code)
+        public static String DecodeBase64(String input, String code)
         {
             byte[] bytes = Convert.FromBase64String(code);
-            string decode;
+            String decode;
             try
             {
                 decode = Encoding.GetEncoding(input).GetString(bytes);
