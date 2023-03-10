@@ -1,24 +1,22 @@
 ﻿using System.Diagnostics;
-using System.Text;
-using System.Text.Json;
-using System.Text.RegularExpressions;
+using System.Net.Http.Json;
 
 namespace VideoSearch
 {
 
     class Api
     {
-        public static String url = "https://code-in-life.netlify.app";
+        public static string url = "https://code-in-life.netlify.app";
     }
 
     class Seach
     {
         public static HttpClient httpClient = new();
 
-        public static String GetUserInput(String message) {
+        public static string GetUserInput(string message) {
 
             Console.WriteLine(message);
-            String? wd = Console.ReadLine();
+            string? wd = Console.ReadLine();
 
             if (wd != null && wd != "") {
                 return wd;
@@ -30,13 +28,14 @@ namespace VideoSearch
             }
         }
 
-        public static async Task StartSearch(String wd) {
+        public static async Task StartSearch(string wd) {
             Console.WriteLine("正在搜索...");
             SearchResult[]? searchResult = await GetSearchSearch(wd);
             if (searchResult != null)
             {
                 Console.WriteLine("请求成功, 获取到" + searchResult.Length.ToString() + "条数据");
                 DisplaySearchResult(searchResult);
+                PickVideo();
             }
             else
             {
@@ -44,34 +43,19 @@ namespace VideoSearch
             }
         }
 
-        public static async Task<SearchResult[]?> GetSearchSearch(String wd) {
-            String url = Api.url + "/video/search/api?s=" + System.Web.HttpUtility.UrlEncode(wd);
+        public static async Task<SearchResult[]?> GetSearchSearch(string wd) {
+            string url = Api.url + "/api/video/list?s=" + System.Web.HttpUtility.UrlEncode(wd);
             SearchResult[]? searchResult = null;
             HttpResponseMessage response = await httpClient.GetAsync(url);
             if (response.IsSuccessStatusCode)
             {
-                String textContent = await response.Content.ReadAsStringAsync();
-                String pattern = @"[a-zA-Z\d\/\+\=]{100,}";
-                Match match = Regex.Match(textContent, pattern);
-                String json = DecodeBase64("utf-8", match.Value);
-                searchResult = JsonSerializer.Deserialize<SearchResult[]>(json);
+                ApiResult? apiResult = await response.Content.ReadFromJsonAsync<ApiResult>();
+                if (apiResult?.code == 0)
+                {
+                    searchResult = apiResult?.data;
+                }
             }
             return searchResult;
-        }
-
-        public static String DecodeBase64(String input, String code)
-        {
-            byte[] bytes = Convert.FromBase64String(code);
-            String decode;
-            try
-            {
-                decode = Encoding.GetEncoding(input).GetString(bytes);
-            }
-            catch
-            {
-                decode = code;
-            }
-            return decode;
         }
 
         public static void DisplaySearchResult(SearchResult[] result) {
@@ -94,10 +78,15 @@ namespace VideoSearch
         }
 
         public static void PickVideo() {
-            String id = GetUserInput("请输入要查看的编号");
-            List<String> args = id.Split('_').ToList();
+            string id = GetUserInput("请输入要查看的编号, 输入x重新搜索");
+            if (id == "x")
+            {
+                StartSearch();
+                return;
+            }
+            List<string> args = id.Split('_').ToList();
             if (args.Count == 2) {
-                Process.Start(new ProcessStartInfo($"https://cif.gatsbyjs.io/video/?api={args[0]}&id={args[1]}") { UseShellExecute = true });
+                Process.Start(new ProcessStartInfo($"https://c.stormkit.dev/video?api={args[0]}&id={args[1]}") { UseShellExecute = true });
             }
             else
             {
@@ -106,18 +95,29 @@ namespace VideoSearch
             PickVideo();
         }
 
+        public static void StartSearch()
+        {
+            string keyword = GetUserInput("请输入要搜索的关键词");
+            StartSearch(keyword).GetAwaiter().GetResult();
+        }
+
         public static void Main()
         {
-            String keyword = GetUserInput("请输入要搜索的关键词");
-            StartSearch(keyword).GetAwaiter().GetResult();
-            PickVideo();
+            StartSearch();
         }
+    }
+
+    class ApiResult
+    {
+        public int code { get; set; }
+        public SearchResult[]? data { get; set; }
+        public string? msg { get; set; }
     }
 
     class SearchResult
     {
-        public String? key { get; set; }
-        public String? name { get; set; }
+        public string? key { get; set; }
+        public string? name { get; set; }
         public double? rating { get; set; }
         public SearchResultPage? page { get; set; }
         public SearchResultData[]? data { get; set; }
@@ -134,11 +134,11 @@ namespace VideoSearch
     class SearchResultData
     {
         public int? id { get; set; }
-        public String? name { get; set; }
+        public string? name { get; set; }
         public int? tid { get; set; }
-        public String? type { get; set; }
-        public String? note { get; set; }
-        public String? dt { get; set; }
-        public String? last { get; set; }
+        public string? type { get; set; }
+        public string? note { get; set; }
+        public string? dt { get; set; }
+        public string? last { get; set; }
     }
 }
