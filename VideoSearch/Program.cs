@@ -6,7 +6,7 @@ namespace VideoSearch
 
     class Api
     {
-        public static string url = "https://code-in-life.netlify.app";
+        public static string url = "https://www.stormkit.dev";
     }
 
     class Seach
@@ -60,7 +60,7 @@ namespace VideoSearch
 
         public static void DisplaySearchResult(SearchResult[] result) {
             
-            foreach (SearchResult resultItem in result.Reverse())
+            foreach (SearchResult resultItem in result)
             {
                 Console.WriteLine($"\n [ {resultItem.name}  Star {resultItem.rating} ]");
 
@@ -86,7 +86,7 @@ namespace VideoSearch
             }
             List<string> args = id.Split('_').ToList();
             if (args.Count == 2) {
-                Process.Start(new ProcessStartInfo($"https://c.stormkit.dev/video?api={args[0]}&id={args[1]}") { UseShellExecute = true });
+                Process.Start(new ProcessStartInfo($"{Api.url}/video?api={args[0]}&id={args[1]}") { UseShellExecute = true });
             }
             else
             {
@@ -103,6 +103,10 @@ namespace VideoSearch
 
         public static void Main()
         {
+            Console.WriteLine("\n-------------------------------------");
+            Console.WriteLine("\n    欢迎使用影视搜索控制台应用  ");
+            Console.WriteLine("      v1.0 build 2023.04.10  ");
+            Console.WriteLine("\n-------------------------------------\n");
             StartSearch();
         }
     }
