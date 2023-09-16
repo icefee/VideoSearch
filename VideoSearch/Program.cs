@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Net.Http.Json;
 
 namespace VideoSearch
@@ -6,10 +7,10 @@ namespace VideoSearch
 
     class Api
     {
-        public static string url = "https://www.stormkit.dev";
+        public static string url = "https://code-app.netlify.app";
     }
 
-    class Seach
+    class Search
     {
         public static HttpClient httpClient = new();
 
@@ -84,9 +85,9 @@ namespace VideoSearch
                 StartSearch();
                 return;
             }
-            List<string> args = id.Split('_').ToList();
-            if (args.Count == 2) {
-                Process.Start(new ProcessStartInfo($"{Api.url}/video?api={args[0]}&id={args[1]}") { UseShellExecute = true });
+            if (id.Split("_").Length == 2) {
+                string videoId = Convert.ToBase64String(System.Text.Encoding.Default.GetBytes(id.Replace("_", "|"))).Replace("=", "");
+                Process.Start(new ProcessStartInfo($"{Api.url}/video/play/{videoId}") { UseShellExecute = true });
             }
             else
             {
